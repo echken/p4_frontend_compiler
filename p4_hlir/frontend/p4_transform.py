@@ -30,7 +30,7 @@ class p4_transformer:
 	dependency_matrix = {}	
 	for table_name in p4_table.keys():## for every table in p4 program
 	    dependency_matrix[table_name] = {}
-	    dag_split_result = {}
+	    ##dag_split_result = {}
 	    primitive_action_of_region = {}
 	    for action_function_name in p4_table[table_name]: ##action_function in p4 table named table_name
 		dependency_matrix[table_name][action_function_name] = [[0 for x in \
@@ -40,8 +40,8 @@ class p4_transformer:
 		dependency_matrix[table_name][action_function_name] = self.\
                 identifier.dependency_identify(action_function_name, primitive_action_param_access_attr)
 	        primitive_action_dict = p4_action_function[action_function_name]
-		dag_split_result[action_function_name], primitive_action_of_region[action_function_name] =\
-          dag_splitter().dag_split(dependency_matrix[table_name][action_function_name], primitive_action_dict)
+		primitive_action_of_region[action_function_name] = dag_splitter().dag_split\
+		(dependency_matrix[table_name][action_function_name], primitive_action_dict)
 		
 		##dag_split_result[action_function_name] = self.splitter.region
 		##primitive_action_of_region[action_function_name] = self.splitter.primitive_action_of_region
