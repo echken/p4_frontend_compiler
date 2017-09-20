@@ -61,7 +61,10 @@ class dag_splitter():
 	key_list = primitive_action_dict.keys()
 	for i in range(len(update_flag)-1, -1, -1):
 	    del primitive_action_dict[key_list[update_flag[i]]]
-	    del dependency_of_primitive_action[update_flag[i]]
+	    if len(dependency_of_primitive_action) != 0:
+	        del dependency_of_primitive_action[update_flag[i]]
+	    else:
+		break
 	    pass
 	pass
         return dependency_of_primitive_action, primitive_action_dict
