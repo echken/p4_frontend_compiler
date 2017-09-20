@@ -53,7 +53,7 @@ class dag_splitter():
         # update each row of dependency matrix,(delete colomun that have not any dependency between other primitive)
 	for i in range(len(dependency)):
 	    for j in range(len(update_flag)-1, -1, -1):
-	        del dependency_of_primitive_action[update_flag[i]]
+	        del dependency_of_primitive_action[i][update_flag[j]]
 		pass
 	    pass
 	pass    	
