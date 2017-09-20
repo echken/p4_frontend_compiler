@@ -32,10 +32,11 @@ class dag_splitter():
 	    pass
 	pass
         action_list = []
+	key_list = primitive_action_dict.keys()
         for i in range(num_remained_primitive_action):
 	    if dependency[i] == 0:
 		# update action list of specific region if there have not any dependency between this 
-		action_list.append(primitive_action_dict[i]) 
+		action_list.append(primitive_action_dict[key_list[i]]) 
 		pass
 	    pass
         self.primitive_action_of_region.append(action_list)
@@ -49,53 +50,19 @@ class dag_splitter():
 		pass
 	    pass
 
-# update each row of dependency matrix,(delete colomun that have not any dependency between other primitive)
+        # update each row of dependency matrix,(delete colomun that have not any dependency between other primitive)
 	for i in range(len(dependency)):
-	    dependency_temp = []
-	    for j in range(len(update_flag)):
-		if j == 0:
-		    if update_flag[j] == 0:
-			continue
-		    else:
-		        dependency_temp = dependency_of_primitive_action[i][:update_flag[j]]
-			pass 
-		elif j == len(update_flag) - 1:
-		    if update_flag[j] == len(dependency) - 1: # last primitive 
-			dependency_temp = dependency_temp + dependency_of_primitive_action[i][update_flag\
-                        [j-1]+1:update_flag[j]]
-			pass
-		    else:
-			dependency_temp = dependency_temp + dependency_of_primitive_action[i][update_flag[j-1]+1:update_flag[j]] + dependency_of_primitive_action[i][update_flag[j] + 1:]
-		else:
-		    dependency_temp = dependency_temp + dependency_of_primitive_action[i][update_flag[j-1]+1:update_flag[j]]
-
-
-	    dependency_of_primitive_action[i] = dependency_temp
+	    for j in range(len(update_flag)-1, -1, -1):
+	        del dependency_of_primitive_action[update_flag[i]]
+		pass
 	    pass
+	pass    	
 	# delete row that corresponding to other primitive,(edge of codelet dag)
-	dependency_matrix_row_temp = []
-	primitive_action_temp = []
-	for i in range(len(update_flag)):
-	    if i == 0:
-		if update_flag[i] == 0:
-		    continue
-		else:
-		    dependency_matrix_row_temp = dependency_of_primitive_action[:update_flag[i]]
-		    primitive_action_temp = primitive_action_dict[:update_flag[i]]
-		    pass	
-	    elif i == len(update_flag) - 1:
-		if update_flag[i] == len(dependency) - 1:
-		    dependency_matrix_row_temp = dependency_matrix_row_temp + dependency_of_primitive_action[update_flag[i-1]+1 : update_flag[i]]
-		    primitive_action_temp = primitive_action_temp + primitive_action_dict[update_flag[i-1]+1 : update_flag[i]]
-		else:
-		    dependency_matrix_row_temp = dependency_matrix_row_temp + dependency_of_primitive_action[update_flag[i-1]+1 : update_flag[i]] + dependency_of_primitive_action[update_flag[i]+1:]
-		    primitive_action_temp = primitive_action_temp + primitive_action_dict[update_flag[i-1]+1 : update_flag[i]] + primitive_action_dict[update_flag[i]+1:]
-	    else:
-		dependency_matrix_row_temp = dependency_matrix_row_temp + dependency_of_primitive_action[update_flag[i-1]+1 : update_flag[i]]
-		primitive_action_temp = primitive_action_temp + primitive_action_dict[update_flag[i-1]+1: update_flag[i]]
+	key_list = primitive_action_dict.keys()
+	for i in range(len(update_flag)-1, -1, -1):
+	    del primitive_action_dict[key_list[update_flag[i]]]
+	    del dependency_of_primitive_action[update_flag[i]]
 	    pass
-	dependency_of_primitive_action = dependency_matrix_row_temp
-	primitive_action_dict = primitive_action_temp
 	pass
         return dependency_of_primitive_action, primitive_action_dict
 '''
