@@ -56,31 +56,78 @@ class action_dependency_identify:
 	        for j in range(num_args_of_primitive_action[i]):
 		    if access_attr_list[i][j] == 'write':
 		        for k in range(i+1, num_of_primitive_action):## for primitive action after the ith action
-			    for l in range(num_args_of_primitive_action[k]):
-			        if primitive_action_param[k][l] == primitive_action_param[i][j]:
-				    if access_attr_list[k][l] == 'read': # read-after-write
-				        dependency_of_primitive_action[i][k] = 2
-
-				    elif access_attr_list[k][l] == 'write': #write-after-write
+			    if re.match(r'register*', primitive_action_name[i]) != None and re.match(r'register*', primitive_action_name[k]) != None:  # register read and write primitive action 
+			        if primitive_action_name[i] == 'register_read' and primitive_action_name[k] == 'register_read':
+				    if primitive_action_param[i][0] == primitive_action_param[k][0]:
 				        dependency_of_primitive_action[i][k] = 3
-
-				    else:
-				        print '%s %s of %s access attr error'%(primitive_action_name[k],prmitive_action_param[l],action_function_name)
-			        else:
-				    continue
+				        pass
+			        elif primitive_action_name[i] == 'register_read' and primitive_action_name[k] == 'register_write':
+				    if primitive_action_param[i][0] == primitive_action_param[k][2]:
+				        dependency_of_primitive_action[i][k] = 2
+				        pass
+				    if primitive_action_param[i][1] == primitive_action_param[k][0] and primitive_action_param[i][2] == primitive_action_param[k][1]:
+				        dependency_of_primitive_action[i][k] = 1
+				        pass
+			        elif primitive_action_name[i] == 'register_write' and primitive_action_name[k] =='register_read':
+				    if primitive_action_param[i][0] == primitive_action_param[k][1] and primitive_action_param[i][1] == primitive_action_param[k][2]:
+				        dependency_of_primitive_action[i][k] = 2
+				        pass
+				    if primitive_action_param[i][2] == primitive_action_param[k][0]:
+				        dependency_of_primitive_action = 1
+				        pass
+			        elif primitive_action_name[i] =='register_write' and primitive_action_name[k] == 'register_write':
+				    if primitive_action_param[i][0] == primitive_action_param[k][0] and primitive_action_param[i][1] == primitive_action_param[k][1]:
+				        dependency_of_primitive_action[i][k] = 3
+				        pass
+			    else:
+			        for l in range(num_args_of_primitive_action[k]):
+			            if primitive_action_param[k][l] == primitive_action_param[i][j]:
+				        if access_attr_list[k][l] == 'read': # read-after-write
+				            dependency_of_primitive_action[i][k] = 2
+				        elif access_attr_list[k][l] == 'write': #write-after-write
+				            dependency_of_primitive_action[i][k] = 3
+				        else:
+				            print '%s %s of %s access attr error'%(primitive_action_name[k],prmitive_action_param[l],action_function_name)
+			            else:
+				        continue
 		    elif access_attr_list[i][j] == 'read':
 		        for k in range(i+1, num_of_primitive_action):
-		            for l in range(num_args_of_primitive_action[k]):
-			        if primitive_action_param[k][l] == primitive_action_param[i][j]:
-				    if access_attr_list[k][l] == 'read':   # read-after-read no dependency
-				        ##dependency_of_primitive_action[i][k] = 0
+			    if re.match(r'register*', primitive_action_name[i]) != None and re.match(r'register*', primitive_action_name[k]) != None:  # register read and write primitive action 
+			        if primitive_action_name[i] == 'register_read' and primitive_action_name[k] == 'register_read':
+				    if primitive_action_param[i][0] == primitive_action_param[k][0]:
+				        dependency_of_primitive_action[i][k] = 3
 				        pass
-				    elif access_attr_list[k][l] == 'write': # write-after-read
+			        elif primitive_action_name[i] == 'register_read' and primitive_action_name[k] == 'register_write':
+				    if primitive_action_param[i][0] == primitive_action_param[k][2]:
+				        dependency_of_primitive_action[i][k] = 2
+				        pass
+				    if primitive_action_param[i][1] == primitive_action_param[k][0] and primitive_action_param[i][2] == primitive_action_param[k][1]:
 				        dependency_of_primitive_action[i][k] = 1
-				    else:
-				        print '%s %s of %s access attr error'%(primitive_action_name[k],prmitive_action_param[l],action_function_name)
-			        else:
-				    continue
+				        pass
+			        elif primitive_action_name[i] == 'register_write' and primitive_action_name[k] =='register_read':
+				    if primitive_action_param[i][0] == primitive_action_param[k][1] and primitive_action_param[i][1] == primitive_action_param[k][2]:
+				        dependency_of_primitive_action[i][k] = 2
+				        pass
+				    if primitive_action_param[i][2] == primitive_action_param[k][0]:
+				        dependency_of_primitive_action = 1
+				        pass
+			        elif primitive_action_name[i] =='register_write' and primitive_action_name[k] == 'register_write':
+				    if primitive_action_param[i][0] == primitive_action_param[k][0] and primitive_action_param[i][1] == primitive_action_param[k][1]:
+				        dependency_of_primitive_action[i][k] = 3
+				        pass
+			    else:
+		                for l in range(num_args_of_primitive_action[k]):
+			            if primitive_action_param[k][l] == primitive_action_param[i][j]:
+				        if access_attr_list[k][l] == 'read':   
+                                        # read-after-read no dependency
+				        ##dependency_of_primitive_action[i][k] = 0
+				            pass
+				        elif access_attr_list[k][l] == 'write': # write-after-read
+				            dependency_of_primitive_action[i][k] = 1
+				        else:
+				            print '%s %s of %s access attr error'%(primitive_action_name[k],prmitive_action_param[l],action_function_name)
+			            else:
+				        continue
 		    else:  
 	                print '%s %s of %s access attr error'%(primitive_action_name[i],prmitive_action_param[j],action_function_name)
 
