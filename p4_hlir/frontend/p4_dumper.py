@@ -25,22 +25,45 @@ class p4_dumper():
 	while i<len(line_list): 
 	    table_match = re.match('^\\s*table\\s+.+\\s*{', line_list[i]) ##table definition
 	    action_match = re.match('^\\s*action\\s+.+\(.*\)\\s*{', line_list[i]) ## action definition
+	    action_profile_flag = 0
+	    action_profile_name = ''
             if table_match!=None and action_match==None:
 		P4Table_name = self.get_table_name(line_list[i])
 		i = i+1
 		pass
 		while re.match('^\\s*actions\\s*{', line_list[i])==None:  ##actions of logical table
+		    if re.match('^\\s*action_profile\\s*:.+', line_list[i]) != None: # action profile
+			action_profile_name = re.findall('^\\s*action_profile\\s*:\\s*(.+?)\\s*;', line_list[i])
+			action_profile_flag = 1
+			while re.match('^\\s*}', line_list[i]) == None:
+			    i = i+1
+			    pass
+		        break		
 		    ## if this line is not the start point of actions definition
-		    i = i+1  ## match fields 
-		    pass
+		    else: 
+			i = i+1  ## match fields 
+		        pass
 		pass
+		if action_profile_flag == 1:  ## action profile 
+		    i = i+1
+		    ##self.P4Table[P4Table_name] = action_profile_name 
+		    ## don't add table that contains action profile
+		    continue
+		    pass
 		i = i+1
 		action_function_list = []
 		while re.match('^\\s*}', line_list[i])==None: ## or re.match('.*;\\s*}\n', line_list[i])
                     ## if this line is still actions definition
-                    action_function = line_list[i].lstrip().split(';')[0]  ##action name
-		    action_function_list.append(action_function) ## function list of this table
-	            i = i+1
+		    if line_list[i] == '': #delete empty line in actions block
+			del line_list[i]
+			pass	
+		    elif re.match('^\\s*\#.+', line_list[i]) != None or re.match('^\\s*\/\/.+', line_list[i]) != None:
+			i = i+1
+		    else:
+                        action_function = line_list[i].lstrip().split(';')[0]  ##action name
+		        action_function_list.append(action_function) ## function list of this table
+	                i = i+1
+			pass
 		    pass
 		pass
 		self.P4Table[P4Table_name] = action_function_list		
@@ -55,7 +78,9 @@ class p4_dumper():
 	    ##table_match = re.match('^\\s*table\\s+.*{\n', line_list[i])
 	    ##action_match = re.match('^\\s*action(.*)\\s*{\n', line_list[i])
             elif table_match==None and action_match!=None:  ## action match
-	        action_function_name = line_list[i].split()[1][0:line_list[i].split()[1].index('(')]
+		action_function_name = ''.join(re.findall('^\\s*action\\s+(.+?)\\s*\(.+', line_list[i]))
+		#get action function name
+	        ##action_function_name = line_list[i].split()[1][0:line_list[i].split()[1].index('(')]
 		i = i+1
 		primitive_action_dict = {}
 		primitive_action_num = 0
@@ -65,7 +90,26 @@ class p4_dumper():
 		    if line_list[i] == '':
 			i = i+1
 			continue
-		    else:
+		    elif re.match(r'^.+\((.*)\);', line_list[i]) == None:  ## muti-line primitive action def
+			primitive_action_param = ''
+			primitive_action_param_list = []
+			while line_list[i][-1] != ';':
+			    if len(line_list[i].lstrip().split('(')) == 2:   ## first line
+			        primitive_action_name = line_list[i].lstrip().split('(')[0]
+				primitive_action_param += line_list[i].strip().split('(')[1]
+			        pass
+			    else:
+				primitive_action_param += line_list[i].strip()
+				pass
+			    i = i+1
+			    pass
+			primitive_action_param += line_list[i].strip()[:-2]
+			primitive_action_param_list = primitive_action_param.split(',')
+			primitive_action_param_list.insert(0, primitive_action_name)
+			primitive_action_dict[primitive_action_num] = primitive_action_param_list
+			primitive_action_num += 1
+			i = i+1
+		    else:   # single line action define
 		        primitive_action_param_list = []
 			print line_list[i] 
 		        param_start_index = line_list[i].lstrip().split(';')[0].index('(') + 1
